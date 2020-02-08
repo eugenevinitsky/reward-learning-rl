@@ -35,6 +35,7 @@ def setup_exps():
     config = deepcopy(DEFAULT_PPO_CONFIG)
     config['seed'] = 0
     config['train_batch_size'] = args.train_batch_size
+    config['sgd_minibatch_size'] = 64
     config['gamma'] = 0.995
 
     # Universal hyperparams
@@ -66,16 +67,14 @@ def setup_exps():
         'checkpoint_at_end': True,
         'stop': stop_dict,
         'config': config,
-        'num_samples': args.num_samples,
+        'num_samples': 1,
     }
     return exp_dict, args
 
 if __name__ == "__main__":
     exp_dict, args = setup_exps()
 
-    if args.multi_node:
-        ray.init(redis_address='localhost:6379')
-    elif args.local_mode:
+    if args.local_mode:
         ray.init(local_mode=True)
     else:
         ray.init()

@@ -8,3 +8,4 @@ dependencies:
 - conda>=4.6
 - pip:
     - -r ./requirements_berry.txt
+    - "pillow<7"
