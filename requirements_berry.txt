@@ -3,3 +3,6 @@ gym
 pytorch-lightning
 ray==0.8.0
 numpy==1.17.1
+tensorflow==1.15.1
+lz4
+psutil

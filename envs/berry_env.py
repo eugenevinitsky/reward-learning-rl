@@ -7,6 +7,7 @@ import numpy as np
 class BerryEnv(gym.Env):
     def __init__(self):
         self.stupid_mapping = {0: -1, 1: 0, 2: 1}
+        self.step_num = 0
 
     @property
     def observation_space(self):
@@ -23,8 +24,14 @@ class BerryEnv(gym.Env):
         #TODO(ajose)
         self.send_robot_action(commands)
 
+        self.step_num += 1
+
+        done = False
+        if self.step_num > 100:
+            done = True
+
         # Return state, reward, is_terminated, dict you can ignore
-        return np.zeros(1), 0, False, {}
+        return np.zeros(1), 0, done, {}
 
     def reset(self):
         return np.zeros(1)
