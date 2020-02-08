@@ -1,0 +1,5 @@
+torch==1.3.1
+gym
+pytorch-lightning
+ray==0.8.0
+numpy==1.17.1

@@ -8,6 +8,7 @@ from ray.tune.registry import register_env
 
 from envs.berry_env import BerryEnv
 
+
 def ray_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp_title', type=str, default='test',

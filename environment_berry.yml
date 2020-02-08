@@ -1,0 +1,10 @@
+name: berry_learning
+channels:
+- defaults
+- conda-forge
+dependencies:
+- python=3.6.5
+- pip>=19.0
+- conda>=4.6
+- pip:
+    - -r ./requirements_berry.txt
