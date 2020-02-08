@@ -6,3 +6,4 @@ numpy==1.17.1
 tensorflow==1.15.1
 lz4
 psutil
+opencv-python
