@@ -1,6 +1,7 @@
 import os
 
 import torch
+import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 #from torchvision.datasets import MNIST
@@ -9,27 +10,47 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
 from data_loader.bottle_loader import BottleDataset
-fail_dir = "/home/BOSDYN/ajose/Pictures/Webcam/fail"
-success_dir = "/home/BOSDYN/ajose/Pictures/Webcam/succ"
+fail_dir = os.path.join(__file__, os.path.abspath('../../data/fail'))
+success_dir = os.path.join(__file__, os.path.abspath('../../data/succ'))
 
 class CoolSystem(pl.LightningModule):
 
     def __init__(self):
         super(CoolSystem, self).__init__()
-        # not the best model...
-        self.pool = torch.nn.modules.pooling.AvgPool2d(4)
-        self.l1 = torch.nn.Linear(3 * 720 * 960, 2)
+        self.make_square = nn.AvgPool2d((4, 3))
+        self.pool1 = nn.MaxPool2d(4, 4)
+        self.pool2 = nn.MaxPool2d(2, 2)
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 12 * 12, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 1)
 
     def forward(self, x):
-        x_trans = torch.transpose(x, 1, 3).float()
-        return torch.relu(self.l1(x.float().view(x.size(0), -1)))
-        #return torch.relu(self.l1(self.pool(x.view(x_trans.size(0), -1))))
+        x = torch.transpose(x, 1, 3).float()
+        x = self.make_square(x)
+        x = self.pool1(x)
+        x = self.pool2(F.relu(self.conv1(x)))
+        x = self.pool2(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 12 * 12)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x.view(-1)
+
+    # def forward(self, x):
+    #     import ipdb; ipdb.set_trace()
+    #     # this is some nonsense where we unravel the whole thing
+    #     return torch.squeeze(torch.relu(self.l1(x.float().view(x.size(0), -1))))
+    #     #return torch.relu(self.l1(self.pool(x.view(x_trans.size(0), -1))))
 
     def training_step(self, batch, batch_idx):
         # REQUIRED
         x, y = batch
         y_hat = self.forward(x)
-        loss = F.cross_entropy(y_hat, y)
+        pos_weight = torch.ones([1])
+        criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        loss = criterion(y_hat, y.float())
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
