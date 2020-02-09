@@ -8,16 +8,20 @@ from torchvision import transforms
 
 import pytorch_lightning as pl
 
+from data_loader.bottle_loader import BottleDataset
+fail_dir = ""
+success_dir = ""
 
 class CoolSystem(pl.LightningModule):
 
     def __init__(self):
         super(CoolSystem, self).__init__()
         # not the best model...
-        self.l1 = torch.nn.Linear(28 * 28, 10)
+        self.pool = torch.nn.modules.pooling.AvgPool2d(4)
+        self.l1 = torch.nn.Linear(28 * 28, 1)
 
     def forward(self, x):
-        return torch.relu(self.l1(x.view(x.size(0), -1)))
+        return torch.relu(self.l1(self.pool(x.view(x.size(0), -1))))
 
     def training_step(self, batch, batch_idx):
         # REQUIRED
@@ -27,29 +31,29 @@ class CoolSystem(pl.LightningModule):
         tensorboard_logs = {'train_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
-    def validation_step(self, batch, batch_idx):
-        # OPTIONAL
-        x, y = batch
-        y_hat = self.forward(x)
-        return {'val_loss': F.cross_entropy(y_hat, y)}
-
-    def validation_end(self, outputs):
-        # OPTIONAL
-        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
-        tensorboard_logs = {'val_loss': avg_loss}
-        return {'avg_val_loss': avg_loss, 'log': tensorboard_logs}
-
-    def test_step(self, batch, batch_idx):
-        # OPTIONAL
-        x, y = batch
-        y_hat = self.forward(x)
-        return {'test_loss': F.cross_entropy(y_hat, y)}
-
-    def test_end(self, outputs):
-        # OPTIONAL
-        avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
-        tensorboard_logs = {'test_loss': avg_loss}
-        return {'avg_test_loss': avg_loss, 'log': tensorboard_logs}
+    # def validation_step(self, batch, batch_idx):
+    #     # OPTIONAL
+    #     x, y = batch
+    #     y_hat = self.forward(x)
+    #     return {'val_loss': F.cross_entropy(y_hat, y)}
+    #
+    # def validation_end(self, outputs):
+    #     # OPTIONAL
+    #     avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+    #     tensorboard_logs = {'val_loss': avg_loss}
+    #     return {'avg_val_loss': avg_loss, 'log': tensorboard_logs}
+    #
+    # def test_step(self, batch, batch_idx):
+    #     # OPTIONAL
+    #     x, y = batch
+    #     y_hat = self.forward(x)
+    #     return {'test_loss': F.cross_entropy(y_hat, y)}
+    #
+    # def test_end(self, outputs):
+    #     # OPTIONAL
+    #     avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
+    #     tensorboard_logs = {'test_loss': avg_loss}
+    #     return {'avg_test_loss': avg_loss, 'log': tensorboard_logs}
 
     def configure_optimizers(self):
         # REQUIRED
@@ -60,18 +64,18 @@ class CoolSystem(pl.LightningModule):
     @pl.data_loader
     def train_dataloader(self):
         # REQUIRED
-        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
+        return DataLoader(BottleDataset(success_dir=success_dir, fail_dir=fail_dir), batch_size=32)
 
-    @pl.data_loader
-    def val_dataloader(self):
-        # OPTIONAL
-        return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
-
-    @pl.data_loader
-    def test_dataloader(self):
-        # OPTIONAL
-        return DataLoader(MNIST(os.getcwd(), train=False, download=True, transform=transforms.ToTensor()),
-                          batch_size=32)
+    # @pl.data_loader
+    # def val_dataloader(self):
+    #     # OPTIONAL
+    #     return DataLoader(MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor()), batch_size=32)
+    #
+    # @pl.data_loader
+    # def test_dataloader(self):
+    #     # OPTIONAL
+    #     return DataLoader(MNIST(os.getcwd(), train=False, download=True, transform=transforms.ToTensor()),
+    #                       batch_size=32)
 
 if __name__=='__main__':
     from pytorch_lightning import Trainer
@@ -80,4 +84,4 @@ if __name__=='__main__':
 
     # most basic trainer, uses good defaults
     trainer = Trainer()
-    trainer.fit(model)   
+    trainer.fit(model)
