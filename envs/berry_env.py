@@ -16,7 +16,7 @@ class BerryEnv(gym.Env):
     def init_grbl(self):
         self.serial_cxn = serial.Serial('/dev/ttyUSB0', 115200)
         # Wake up grbl
-        self.serial_cxn.write("\r\n\r\n")
+        self.serial_cxn.write("\r\n\r\n".encode())
         time.sleep(2)                 # Wait for grbl to initialize
         self.serial_cxn.flushInput()  # Flush startup text in serial input
         
@@ -35,6 +35,7 @@ class BerryEnv(gym.Env):
         self.send_robot_action(commands)
 
         self.step_num += 1
+        print('step num is {}'.format(self.step_num))
 
         done = False
         if self.step_num > 100:
@@ -59,7 +60,7 @@ class BerryEnv(gym.Env):
             grbl_cmds.append("G91 G0  Z" + str(commands[2] * magnitude))
 
         for c in grbl_cmds:
-            print 'Sending: ' + c
-            self.serial_cxn.write(c + '\n')        # Send g-code block to grbl
+            # print('Sending: ' + c)
+            self.serial_cxn.write((c + '\n').encode())        # Send g-code block to grbl
             grbl_out = self.serial_cxn.readline()  # Wait for grbl response with carriage return
-            print ' : ' + grbl_out.strip()
+            # print(' : ' + grbl_out.strip())
