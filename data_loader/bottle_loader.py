@@ -22,7 +22,7 @@ class BottleDataset(Dataset):
         # if the idx is less than this, we look in the success directory
         self.file_cutoff = len(file_names)
 
-        file_names.append( [file for file in os.listdir(self.fail_dir) if 'jpg' in file ])
+        file_names.extend( [file for file in os.listdir(self.fail_dir) if 'jpg' in file ])
         self.file_names = file_names
 
     def __len__(self):
@@ -32,14 +32,17 @@ class BottleDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        if idx <= self.file_cutoff:
-            img_path = os.path.join(self.success_dir, self.file_names[idx])
+        if idx < self.file_cutoff:
+            try:
+                img_path = os.path.join(self.success_dir, self.file_names[idx])
+            except:
+                import ipdb; ipdb.set_trace()
             label = 1
         else:
             img_path = os.path.join(self.fail_dir, self.file_names[idx])
             label = 0
 
         image = io.imread(img_path)
-        sample = {'image': image, 'label': label}
+        sample = (image, label)
 
         return sample

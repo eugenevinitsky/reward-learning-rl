@@ -106,7 +106,7 @@ venv.bak/
 *.swp
 .idea
 *.mp4
-data/
+#data/
 vis/
 tmp/
 vendor/*

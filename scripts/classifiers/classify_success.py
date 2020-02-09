@@ -3,14 +3,14 @@ import os
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from torchvision.datasets import MNIST
-from torchvision import transforms
+#from torchvision.datasets import MNIST
+#from torchvision import transforms
 
 import pytorch_lightning as pl
 
 from data_loader.bottle_loader import BottleDataset
-fail_dir = ""
-success_dir = ""
+fail_dir = "/home/BOSDYN/ajose/Pictures/Webcam/fail"
+success_dir = "/home/BOSDYN/ajose/Pictures/Webcam/succ"
 
 class CoolSystem(pl.LightningModule):
 
@@ -18,10 +18,12 @@ class CoolSystem(pl.LightningModule):
         super(CoolSystem, self).__init__()
         # not the best model...
         self.pool = torch.nn.modules.pooling.AvgPool2d(4)
-        self.l1 = torch.nn.Linear(28 * 28, 1)
+        self.l1 = torch.nn.Linear(3 * 720 * 960, 2)
 
     def forward(self, x):
-        return torch.relu(self.l1(self.pool(x.view(x.size(0), -1))))
+        x_trans = torch.transpose(x, 1, 3).float()
+        return torch.relu(self.l1(x.float().view(x.size(0), -1)))
+        #return torch.relu(self.l1(self.pool(x.view(x_trans.size(0), -1))))
 
     def training_step(self, batch, batch_idx):
         # REQUIRED
@@ -83,5 +85,5 @@ if __name__=='__main__':
     model = CoolSystem()
 
     # most basic trainer, uses good defaults
-    trainer = Trainer()
+    trainer = Trainer(min_epochs=100)
     trainer.fit(model)
